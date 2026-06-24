@@ -50,6 +50,7 @@ def create_issue(
     labels: str = "",
     components: str = "",
     fix_versions: str = "",
+    parent: str = "",
 ) -> dict:
     url = base_url.rstrip("/") + "/rest/api/3/issue"
     fields = {
@@ -68,6 +69,8 @@ def create_issue(
         fields["components"] = [{"name": name} for name in parse_list(components)]
     if fix_versions:
         fields["fixVersions"] = [{"name": name} for name in parse_list(fix_versions)]
+    if parent:
+        fields["parent"] = {"key": parent}
     payload = {"fields": fields}
     response = requests.post(
         url,
@@ -117,6 +120,11 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Comma-separated fix version names",
     )
+    parser.add_argument(
+        "--parent",
+        default="",
+        help="Parent issue key（如 MSCN-123）",
+    )
     return parser.parse_args()
 
 
@@ -137,6 +145,7 @@ def main() -> None:
         labels=args.labels,
         components=args.components,
         fix_versions=args.fix_versions,
+        parent=args.parent,
     )
     issue_key = issue.get("key")
     issue_url = f"{args.url.rstrip('/')}/browse/{issue_key}" if issue_key else None
