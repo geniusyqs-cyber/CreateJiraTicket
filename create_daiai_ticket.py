@@ -18,6 +18,10 @@ def get_env(name: str) -> str:
     return value
 
 
+def parse_list(value: str):
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 def build_description(description: str) -> dict:
     return {
         "type": "doc",
@@ -41,16 +45,33 @@ def create_issue(
     summary: str,
     description: str,
     issuetype: str,
+    priority: str = None,
+    assignee: str = None,
+    labels: str = "",
+    components: str = "",
+    fix_versions: str = "",
+    parent: str = None,
 ) -> dict:
     url = base_url.rstrip("/") + "/rest/api/3/issue"
-    payload = {
-        "fields": {
-            "project": {"key": project_key},
-            "summary": summary,
-            "description": build_description(description),
-            "issuetype": {"name": issuetype},
-        }
+    fields = {
+        "project": {"key": project_key},
+        "summary": summary,
+        "description": build_description(description),
+        "issuetype": {"name": issuetype},
     }
+    if priority:
+        fields["priority"] = {"name": priority}
+    if assignee:
+        fields["assignee"] = {"accountId": assignee}
+    if labels:
+        fields["labels"] = parse_list(labels)
+    if components:
+        fields["components"] = [{"name": name} for name in parse_list(components)]
+    if fix_versions:
+        fields["fixVersions"] = [{"name": name} for name in parse_list(fix_versions)]
+    if parent:
+        fields["parent"] = {"key": parent}
+    payload = {"fields": fields}
     response = requests.post(
         url,
         auth=(email, api_token),
@@ -78,6 +99,32 @@ def parse_args() -> argparse.Namespace:
         default="https://daicompanies.atlassian.net",
         help="Jira 基础 URL，默认 https://daicompanies.atlassian.net",
     )
+    parser.add_argument("--priority", default=None, help="Priority, 如 Medium")
+    parser.add_argument(
+        "--assignee",
+        default=None,
+        help="Assignee accountId（Jira Cloud），例如 5b10a2844c20165700ede21g",
+    )
+    parser.add_argument(
+        "--labels",
+        default="",
+        help="Comma-separated labels，例如 bug,backend",
+    )
+    parser.add_argument(
+        "--components",
+        default="",
+        help="Comma-separated component names",
+    )
+    parser.add_argument(
+        "--fix-versions",
+        default="",
+        help="Comma-separated fix version names",
+    )
+    parser.add_argument(
+        "--parent",
+        default=None,
+        help="Parent issue key (Epic or parent Story), 例如 DAIAI-123",
+    )
     return parser.parse_args()
 
 
@@ -93,6 +140,12 @@ def main() -> None:
         summary=args.summary,
         description=args.description,
         issuetype=args.type,
+        priority=args.priority,
+        assignee=args.assignee,
+        labels=args.labels,
+        components=args.components,
+        fix_versions=args.fix_versions,
+        parent=args.parent,
     )
     issue_key = issue.get("key")
     issue_url = f"{args.url.rstrip('/')}/browse/{issue_key}" if issue_key else None
