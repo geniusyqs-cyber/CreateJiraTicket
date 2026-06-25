@@ -20,11 +20,11 @@ if (-not $env:JIRA_EMAIL) {
 $desc = Get-Content $DescriptionFile -Raw
 
 python .\create_mscn_ticket.py `
-  --summary "Panaray Data File Generation Failure - Empty Single Metric Causes Postgres Integer Type Conversion Error" `
+  --summary "Demand Analysis, Roadmap Planning, Schedule Arrangement & Sign-off Led by Product Manager" `
   --description "$desc" `
   --type "Story" `
   --project "MSCN" `
   --priority "Medium (migrated)" `
-  --assignee "5b43012c27c98e2ce5156c54" `
+  --assignee "712020:79e689ed-9b94-4571-961c-3c3095fc5827" `
   --components "MSCN-DATA" `
   --parent "MSCN-2738"

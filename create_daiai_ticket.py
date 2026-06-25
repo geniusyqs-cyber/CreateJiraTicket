@@ -90,6 +90,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="在 AI EchoSage (DAIAI) 下创建 Jira Story ticket")
     parser.add_argument("--summary", required=True, help="Ticket 标题")
     parser.add_argument("--description", default="", help="Ticket 描述")
+    parser.add_argument(
+        "--description-file",
+        default="description_daiai.txt",
+        help="Description file path，默认 description_daiai.txt",
+    )
     parser.add_argument("--type", default="Story", help="Issue Type，默认 Story")
     parser.add_argument(
         "--project", default="DAIAI", help="Jira Project Key，默认 DAIAI"
@@ -132,13 +137,18 @@ def main() -> None:
     args = parse_args()
     email = get_env("JIRA_EMAIL")
     api_token = get_env("JIRA_API_TOKEN")
+    description = args.description
+    if not description and args.description_file and os.path.exists(args.description_file):
+        with open(args.description_file, "r", encoding="utf-8") as f:
+            description = f.read()
+
     issue = create_issue(
         base_url=args.url,
         email=email,
         api_token=api_token,
         project_key=args.project,
         summary=args.summary,
-        description=args.description,
+        description=description,
         issuetype=args.type,
         priority=args.priority,
         assignee=args.assignee,
