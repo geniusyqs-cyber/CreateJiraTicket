@@ -1,34 +1,25 @@
-Background
-To support business development and potential B2B institutional client outreach, we need to prepare a concise marketing presentation introducing the company background, William O’Neil investment methodology, target institutional user needs, and key MSHK product value.
-The deck should position MSHK as a methodology-backed equity research and stock screening platform. Core features may include Idea Lists / Screeners, market analysis, chart analysis, stock ratings, watchlist, model portfolio, and market commentary, which are already part of the current product scope.
+User Story Name: As data engineer, I need to troubleshoot the empty metric value error during Panaray file generation, identify whether the blank value comes from abnormal source data or code logic defect, then implement targeted fix to resolve database write failure.
+Deliverable: Root cause confirmed (source data issue / code parsing bug), fixed code deployed, Panaray CSV file generation and PostgreSQL copy write process run successfully without integer conversion error.
+1. Context and Background
+The Panaray data file generation task failed during database writing on 2026-06-25. The error log shows psycopg2.errors.InvalidTextRepresentation: invalid input syntax for type integer: "".
+Root trigger: A single metric field is empty string "", while the target database column is defined as integer type; empty string cannot be cast to integer, leading to copy_from write failure in hk_mapping3.py.
+We need to first verify business rules: whether this metric is allowed to be empty from upstream source data, then decide to either fix abnormal raw source data or add empty value compatible logic in parsing code.
 
-Objective
-Create a client-facing PowerPoint deck for B2B / institutional prospects, helping them quickly understand:
-    Company development history
-    William O’Neil investment story and CANSLIM methodology
-    Target user personas and key pain points
-    MSHK key product highlights and use cases
-    Why MSHK can support brokers, wealth advisors, and independent equity advisory teams
+2. Detail Requirement
+Reproduce the failed task based on log traceback:
+Script path: panaray_data/csv_smb/hk_mapping3.py
+Crash line: Line 1485 psql_insert_copy function calls cur.copy_from to write temporary table
+Error reason: Empty string value inserted into integer column of tmp_table
+Locate which specific metric column appears empty string in the generated CSV data.
+Check upstream raw data source: Confirm if the metric is supposed to have empty value per business definition.
+Classify root cause and implement corresponding fix:
+Case 1: Source data abnormal (empty value not allowed): Clean up upstream invalid source data.
+Case 2: Code parsing defect (lack empty value conversion): Revise parsing logic to convert empty string to NULL/valid integer placeholder before database write.
+Re-run the full hk_mapping3.py update workflow, verify no type conversion error occurs, Panaray data file is generated and imported to database completely.
+Record root cause analysis and fix solution in ticket for future reference.
 
-Scope
-The PPT should include the following sections:
-Company overview and development timeline
-William O’Neil investment philosophy and CANSLIM framework introduction
-Target B2B user personas, especially brokers / wealth advisors and independent equity advisors
-Key pain points, such as scalable research output, client-facing explanation, efficient stock monitoring, and repeatable investment process
-Product highlight pages:
-    Idea Lists / TOP33 / Near Buy Point / Breakout Today
-    Screener and stock filtering
-    Market trend and industry analysis
-    Stock ratings and chart analysis
-    Watchlist and model portfolio
-    Weekly market commentary
-Suggested B2B usage scenarios:
-    Daily market briefing
-    Client advisory preparation
-    Stock idea generation
-    Watchlist monitoring
-    Research workflow standardization
-
-Deliverables
-    One client-facing PPT deck
+3. Actual Expectation
+The specific empty metric field and root cause (source data / code defect) are clearly identified and documented.
+Corresponding repair work is completed (source data cleaning or code logic adjustment).
+Panaray data file generation task runs successfully without invalid input syntax for type integer error.
+Complete data can be written to PostgreSQL temporary table and formal business table normally.
