@@ -1,6 +1,4 @@
 param(
-    [string]$Summary = "Bug ticket summary",
-    [string]$Description = "",
     [string]$DescriptionFile = ".\description.txt"
 )
 
@@ -23,7 +21,7 @@ if ([string]::IsNullOrWhiteSpace($Description)) {
 }
 
 python .\create_mscn_ticket.py `
-  --summary "$Summary" `
-  --description "$Description" `
+  --summary "Weekly Market Review & Portfolio Report Generation (Deliver Every Friday)" `
+  --description "$desc" `
   --type "Bug" `
   --project "MSCN"

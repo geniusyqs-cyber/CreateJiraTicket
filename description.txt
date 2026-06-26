@@ -1,15 +1,96 @@
-User Story Name: As Product Manager, I need to analyze collected demands, formulate product planning, arrange development schedules and complete formal demand sign-off process.
+产品问题记录：突破后价格区间未显示
+用途：用于与 PO / 产品团队共享当前发现的问题，便于后续确认后台逻辑、前端展示规则及产品预期。
 
-Deliverable: Complete demand analysis document, product iteration roadmap, detailed development schedule, fully signed-off demand confirmation form.
+1. 问题摘要
+在个股 K 线图中，当前股票价格已经明显突破并上涨至突破价上方，但图表上未显示预期的三个价格区间标识：
 
-1. Context and Background
-After collecting customer and internal business demands, the product manager shall take charge of full demand management workflow. It includes analyzing demand rationality and value, designing product solution, arranging development timeline, and getting formal sign-off from relevant stakeholders before development kicks off.
+买入区间（Buy / Pivot）
+止损区间（Loss）
+盈利区间（Profit）
+该问题需要后续确认：当前是后台未返回区间数据、前端未展示，还是产品逻辑本身存在展示条件限制。
 
-2. Detail Requirement
-Analyze all collected demands, verify demand value, scope, feasibility and business priority.
-Based on finalized demands, draw up product iteration planning and function roadmap.
-Cooperate with development team to split work items and confirm detailed release schedule.
-Organize cross-team review, complete demand confirmation and obtain formal stakeholder sign-off.
+2. 发现页面 / 场景
+项目	内容
+页面	中际旭创日 K 线图
+形态	盘整
+突破价	657.80
+当前表现	价格已突破并大幅上涨，截图中显示“经过52天达到距突破点+101%位置”
+发现时间	2026-06-24
 
-3. Actual Expectation
-All demands are fully analyzed and validated; clear product planning and delivery schedule are released; all stakeholders complete sign-off to confirm the final demand scope before development execution.
+3. 当前观察
+从截图看：
+
+图表可以识别到盘整形态，并显示突破价为 657.80。
+价格后续已经明显向上运行，甚至达到距突破点约 +101% 的位置。
+但图表中没有看到以下区间标识或提示：
+Buy / Pivot 区间
+Loss 区间
+Profit 区间
+目前不确定是区间逻辑没有触发，还是区间数据已计算但未在前端展示。
+
+4. 按当前产品口径手动计算的理论区间
+基于突破价 657.80，若按以下规则计算：
+
+盈利区间（Profit）：突破价的 120% - 125%
+买入区间（Buy / Pivot）：突破价的 100% - 105%
+止损区间（Loss）：突破价的 92% - 95%
+则理论价格阈值如下：
+
+区间	计算方式	理论价格范围
+Loss	657.80 × 92% - 95%	605.18 - 624.91
+Buy / Pivot	657.80 × 100% - 105%	657.80 - 690.69
+Profit	657.80 × 120% - 125%	789.36 - 822.25
+
+5. 预期表现
+需要 PO / 产品团队确认最终预期。初步建议如下：
+
+当系统已经识别出有效突破价，且价格进入或经过对应区间时，图表应能展示相应区间或状态提示，例如：
+
+价格位于 657.80 - 690.69：显示 Buy / Pivot 区间
+价格位于 605.18 - 624.91：显示 Loss 区间
+价格位于 789.36 - 822.25：显示 Profit 区间
+如果产品逻辑设定为“仅在特定时间窗口内展示”，则需要明确：
+
+展示窗口是按突破后多少天 / 周计算？
+价格远离突破价后，是否仍需要显示历史区间？
+区间是只显示当前所处区间，还是三个区间都应同时展示？
+
+6. 待确认问题
+
+6.1 后台逻辑
+当前后台是否已经根据突破价计算 Loss / Buy / Profit 三个区间？
+API 是否返回这三个区间的上下限价格？
+是否存在展示限制条件，例如：
+仅突破后 N 天内展示
+仅当前价格仍在某个有效范围内展示
+仅特定形态 / 特定市场 / 特定股票类型支持
+
+6.2 前端展示
+前端是否有接收并绘制区间的能力？
+若后台已返回数据，前端当前是否因为样式、缩放、图层优先级等原因未显示？
+当价格已经涨幅较大时，Profit 区间是否应保留在图表中作为历史参考？
+
+6.3 产品规则
+三个区间是否应作为固定价格带展示？
+是否需要跟随图表缩放自动显示 / 隐藏？
+当股价已远高于 Profit 区间时，是否需要显示“已超过盈利区间”之类的状态提示？
+
+7. 建议后续动作
+请开发先确认该股票 / 该形态下，后台是否已生成区间数据。
+如后台已返回数据，请前端确认是否存在展示逻辑或样式问题。
+如后台未返回数据，请 PO 确认该场景是否应纳入区间计算范围。
+
+8. 当前优先级建议
+Priority：Medium
+
+理由：
+
+该问题会影响用户对突破后风险 / 收益区间的理解。
+若区间本身是产品重点引导能力，未显示可能降低图表功能的可解释性。
+但目前暂未确认是否为 bug，需先完成逻辑核查。
+
+9. 状态
+状态	说明
+Current Status	待 PO / Dev 确认
+Owner	TBD
+Next Step	确认后台是否返回区间数据，以及前端是否具备展示逻辑

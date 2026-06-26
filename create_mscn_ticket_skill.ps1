@@ -20,11 +20,11 @@ if (-not $env:JIRA_EMAIL) {
 $desc = Get-Content $DescriptionFile -Raw
 
 python .\create_mscn_ticket.py `
-  --summary "Demand Analysis, Roadmap Planning, Schedule Arrangement & Sign-off Led by Product Manager" `
+  --summary "Product Issue Record: Price range is not displayed after breakout" `
   --description "$desc" `
   --type "Story" `
   --project "MSCN" `
-  --priority "Medium (migrated)" `
-  --assignee "712020:79e689ed-9b94-4571-961c-3c3095fc5827" `
+  --priority "High (migrated)" `
+  --assignee "5a0131d993915e620920fe68" `
   --components "MSCN-DATA" `
   --parent "MSCN-2738"
