@@ -1,16 +1,14 @@
-User Story Name: As data engineer, I need to fix missing archive data of hk.item_master and hk.item_price_ma, resolve the failure of DAG factordb.idea-lists.
+User Story Name: As operation/content staff, I need to reorganize and convert Song Sanjiang’s existing courseware into standardized official investment education materials for platform use.
 
-Deliverable: Post-close update logic added to hk.item_master; archive data complete without missing; DAG qa-hk-archive-table-ready runs successfully.
+Deliverable: Completed polished, standardized and officially accessible investment education content converted from the original courseware.
 
-1. Context and Background
-DAG factordb.idea-lists task qa-hk-archive-table-ready failed on 2026-06-24. Log link: http://192.168.178.43:30754/log?task_id=qa-hk-archive-table-ready&dag_id=factordb.idea-lists&execution_date=2026-06-24T14%3A05%3A00%2B00%3A00
-Root cause: Table hk.item_master only updates before market open without post-close refresh, resulting in incomplete archive data of hk.item_master and hk.item_price_ma. Missing upstream archive data triggers downstream Airflow task failure.
+Context and Background
+There are existing courseware resources from Song Sanjiang. To enrich the platform’s official investment education content library, we need to reorganize, standardize and convert the courseware into formal investment education materials that can be officially used and released.
+Detail Requirement
+1. Sort out and analyze the content of Song Sanjiang’s courseware.
+2. Reorganize wording, structure and layout to match platform official investment education style.
+3. Complete content polishing, standardization and formal conversion.
+4. Form available official investment education materials for internal and platform use.
 
-2. Detail Requirement
-Add post-market closing update logic for table hk.item_master.
-Verify archive data of hk.item_master and hk.item_price_ma are fully generated after market close every trading day.
-Re-run failed DAG factordb.idea-lists and confirm task qa-hk-archive-table-ready executes normally.
-Monitor pre-market data integrity to avoid early-hours data missing risks.
-
-3. Actual Expectation
-hk.item_master refreshes both pre-market and post-market; archive data of hk.item_master & hk.item_price_ma are complete daily; related Airflow DAG runs without failure.
+Actual Expectation
+High-quality, standardized official investment education materials are generated based on the original courseware, enriching the platform investment education content system.
