@@ -20,11 +20,13 @@ if (-not $env:JIRA_EMAIL) {
 $desc = Get-Content $DescriptionFile -Raw
 
 python .\create_mscn_ticket.py `
-  --summary "Convert Song Sanjiang’s courseware into official investment education materials" `
+  --summary "Fix Financial Data Defects for HK Secondary New Stocks & Align Metrics of Dual-Listing H-Shares" `
   --description "$desc" `
   --type "Story" `
   --project "MSCN" `
   --priority "High (migrated)" `
-  --assignee "712020:54f5668e-24e9-49c7-bbfd-ed91b447070d" `
+  --assignee "5a0131d993915e620920fe68" `
   --components "MSCN-DATA" `
-  --parent "MSCN-2738"
+  --parent "MSCN-2738" `
+  --timeout 60 `
+  --retries 3

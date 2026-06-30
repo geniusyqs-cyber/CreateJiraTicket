@@ -4,6 +4,7 @@
 import argparse
 import os
 import sys
+import time
 
 try:
     import requests
@@ -37,6 +38,36 @@ def build_description(description: str) -> dict:
     }
 
 
+def send_request_with_retry(
+    method: str,
+    url: str,
+    max_retries: int,
+    timeout: int,
+    **kwargs,
+) -> requests.Response:
+    for attempt in range(1, max_retries + 1):
+        try:
+            return requests.request(method, url, timeout=timeout, **kwargs)
+        except requests.exceptions.ReadTimeout:
+            if attempt == max_retries:
+                raise
+            wait = 2 ** (attempt - 1)
+            print(
+                f"请求超时，正在重试 {attempt}/{max_retries}，等待 {wait} 秒...",
+                file=sys.stderr,
+            )
+            time.sleep(wait)
+        except requests.exceptions.RequestException as exc:
+            if attempt == max_retries:
+                raise
+            wait = 2 ** (attempt - 1)
+            print(
+                f"请求失败 ({exc.__class__.__name__})，正在重试 {attempt}/{max_retries}，等待 {wait} 秒...",
+                file=sys.stderr,
+            )
+            time.sleep(wait)
+
+
 def create_issue(
     base_url: str,
     email: str,
@@ -51,6 +82,8 @@ def create_issue(
     components: str = "",
     fix_versions: str = "",
     parent: str = "",
+    timeout: int = 30,
+    max_retries: int = 3,
 ) -> dict:
     url = base_url.rstrip("/") + "/rest/api/3/issue"
     fields = {
@@ -72,12 +105,14 @@ def create_issue(
     if parent:
         fields["parent"] = {"key": parent}
     payload = {"fields": fields}
-    response = requests.post(
+    response = send_request_with_retry(
+        "post",
         url,
         auth=(email, api_token),
         headers={"Content-Type": "application/json"},
         json=payload,
-        timeout=30,
+        timeout=timeout,
+        max_retries=max_retries,
     )
     if response.status_code not in (200, 201):
         raise SystemExit(
@@ -125,6 +160,18 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Parent issue key（如 MSCN-123）",
     )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=30,
+        help="请求超时时间（秒），默认 30",
+    )
+    parser.add_argument(
+        "--retries",
+        type=int,
+        default=3,
+        help="请求失败时重试次数，默认 3",
+    )
     return parser.parse_args()
 
 
@@ -146,6 +193,8 @@ def main() -> None:
         components=args.components,
         fix_versions=args.fix_versions,
         parent=args.parent,
+        timeout=args.timeout,
+        max_retries=args.retries,
     )
     issue_key = issue.get("key")
     issue_url = f"{args.url.rstrip('/')}/browse/{issue_key}" if issue_key else None
